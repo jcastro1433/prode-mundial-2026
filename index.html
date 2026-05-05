@@ -1,57 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Prode en vivo</title>
-<style>
-body{font-family:Arial;background:#f8fafc;padding:20px}
-table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border:1px solid #ddd}
-th{background:#eee}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prode Poligsa</title>
+  <style>
+    :root{--bg:#f8fafc;--card:#fff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--primary:#2563eb;--ok:#16a34a;--warn:#ca8a04;--bad:#dc2626}
+    *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}.container{max-width:1150px;margin:0 auto;padding:24px}.header,.card{background:var(--card);border-radius:24px;padding:24px;box-shadow:0 1px 10px #0f172a12}.header{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}.eyebrow{color:var(--muted);font-weight:700;margin:0 0 6px}h1{margin:0;font-size:34px}h2{margin:0 0 12px}.subtitle,.small{color:var(--muted);line-height:1.45}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:18px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}.stat{background:white;border-radius:20px;padding:18px;box-shadow:0 1px 8px #0f172a10}.stat p{margin:0}.stat .label{color:var(--muted);font-size:14px}.stat .value{font-weight:900;font-size:24px;margin-top:6px}.row{display:grid;grid-template-columns:1fr 90px 90px;gap:10px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:16px;margin:10px 0;background:#fff}.teams{font-weight:800}.meta{font-size:12px;color:var(--muted);margin-top:4px}input,select{width:100%;border:1px solid var(--border);border-radius:14px;padding:11px 12px;font-size:15px;background:#fff}.btn{border:0;background:var(--primary);color:white;padding:12px 18px;border-radius:16px;font-weight:800;cursor:pointer}.btn.secondary{background:#0f172a}.btn:disabled{opacity:.55;cursor:not-allowed}table{width:100%;border-collapse:collapse;margin-top:10px}thead{background:#f1f5f9}th,td{padding:13px;border-top:1px solid var(--border);text-align:left}th{color:#475569;font-size:13px}.right{text-align:right}.pill{display:inline-block;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:800}.done{background:#dcfce7;color:#166534}.pending{background:#fef3c7;color:#92400e}.notice{background:#eff6ff;color:#1e3a8a;border-left:4px solid var(--primary);padding:14px 16px;border-radius:14px;margin-top:14px;line-height:1.45}.warn{background:#fff7ed;color:#9a3412;border-left-color:#f97316}.ok{color:var(--ok);font-weight:800}.bad{color:var(--bad);font-weight:800}.actions{display:flex;gap:10px;flex-wrap:wrap}.hide{display:none}@media(max-width:850px){.grid,.stats{grid-template-columns:1fr}.row{grid-template-columns:1fr 1fr 1fr}.container{padding:16px}h1{font-size:28px}}
+  </style>
 </head>
 <body>
-<h1>Ranking en vivo</h1>
-<table>
-<thead><tr><th>#</th><th>Empleado</th><th>Puntos</th></tr></thead>
-<tbody id="ranking"></tbody>
-</table>
+  <main class="container">
+    <header class="header">
+      <div><p class="eyebrow">Prode Poligsa</p><h1>Ranking y carga de pronósticos</h1><p class="subtitle">La web genera el formulario automáticamente desde la hoja de partidos. Vos solo mantenés la planilla.</p></div>
+      <div class="actions"><button class="btn secondary" onclick="refreshAll()">↻ Actualizar</button></div>
+    </header>
+
+    <section class="stats">
+      <div class="stat"><p class="label">Líder actual</p><p class="value" id="leaderName">-</p></div>
+      <div class="stat"><p class="label">Puntaje líder</p><p class="value" id="leaderPoints">0 pts</p></div>
+      <div class="stat"><p class="label">Partidos computados</p><p class="value" id="computedMatches">0</p></div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Cargar pronóstico</h2>
+        <p class="small">Elegí una fecha, cargá los goles y enviá. Para la demo, si todavía no está conectado Apps Script, se guarda en este navegador.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0">
+          <input id="nameInput" placeholder="Nombre y apellido" />
+          <input id="emailInput" placeholder="Email (opcional)" />
+        </div>
+        <div style="margin-bottom:12px"><select id="fechaSelect" onchange="renderPredictionForm()"></select></div>
+        <div id="matchesForm"></div>
+        <button class="btn" id="sendBtn" onclick="submitPrediction()">Enviar pronóstico</button>
+        <div id="submitMsg" class="notice hide"></div>
+      </div>
+
+      <div class="card">
+        <h2>Partidos</h2>
+        <div id="matchesList"></div>
+        <div id="backendNotice" class="notice warn"></div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+        <div><h2>Tabla de posiciones</h2><p class="small">2 puntos por resultado exacto. 1 punto por acertar ganador o empate.</p></div>
+        <select id="rankingFecha" onchange="renderRanking()" style="max-width:190px"></select>
+      </div>
+      <table><thead><tr><th>#</th><th>Empleado</th><th class="right">Puntos</th><th class="right">Exactos</th><th class="right">Aciertos</th></tr></thead><tbody id="rankingBody"></tbody></table>
+    </section>
+  </main>
+
 <script>
-const resultadosURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTN00doLz5fBvG_rfm9a8mWZuOR04KsIsxCIoqHSjwd5uVolmQK0UTmHfZ3uMZfB1DyuBuEJvVeOcDI/pub?output=csv";
-const pronosURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRHsLwPCbEOUMSL0V6LNkIAPs4hx8TXa7xnbrmLMLSgL-BMHzLtA4W8j4qJkIMCq72A3cX4Yz-BXMyN/pub?output=csv";
-
-function parseCSV(t){const r=t.trim().split("\n");const h=r[0].split(",");return r.slice(1).map(l=>{const v=l.split(",");let o={};h.forEach((k,i)=>o[k.trim()]=v[i]);return o})}
-function winner(a,b){return a>b?"L":a<b?"V":"E"}
-
-async function load(){
-const res=await fetch(resultadosURL);const pro=await fetch(pronosURL);
-const resultados=parseCSV(await res.text());
-const pronos=parseCSV(await pro.text());
-let ranking={};
-
-pronos.forEach(p=>{
-const nombre=p["Nombre"]||p["Nombre y apellido"];
-if(!ranking[nombre])ranking[nombre]=0;
-
-resultados.forEach((r,i)=>{
-const gl=Number(r.goles_local);const gv=Number(r.goles_visitante);
-if(isNaN(gl)||isNaN(gv))return;
-
-const values=Object.values(p);
-const pl=Number(values[(i*2)+1]);
-const pv=Number(values[(i*2)+2]);
-
-if(pl===gl && pv===gv)ranking[nombre]+=2;
-else if(winner(pl,pv)===winner(gl,gv))ranking[nombre]+=1;
-});
-});
-
-const sorted=Object.entries(ranking).sort((a,b)=>b[1]-a[1]);
-
-document.getElementById("ranking").innerHTML=sorted.map((r,i)=>`<tr><td>${i+1}</td><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("");
-}
-
-load();
+const CONFIG={
+  partidosCsvUrl:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTN00doLz5fBvG_rfm9a8mWZuOR04KsIsxCIoqHSjwd5uVolmQK0UTmHfZ3uMZfB1DyuBuEJvVeOcDI/pub?output=csv",
+  appsScriptUrl:""
+};
+let partidos=[];let pronosticos=[];
+function parseCSV(text){const rows=text.trim().split(/\r?\n/).filter(Boolean);if(!rows.length)return[];const headers=splitCSV(rows[0]).map(h=>h.trim());return rows.slice(1).map(row=>{const values=splitCSV(row);const o={};headers.forEach((h,i)=>o[h]=(values[i]||"").trim());return o})}
+function splitCSV(row){let out=[],cur="",q=false;for(let i=0;i<row.length;i++){const c=row[i];if(c==='"'){q=!q}else if(c===','&&!q){out.push(cur);cur=""}else{cur+=c}}out.push(cur);return out.map(v=>v.replace(/^"|"$/g,""))}
+function normalizePartido(r){return{partido_id:String(r.partido_id||r.id||"").trim(),fecha:r.fecha||"Fecha 1",grupo:r.grupo||r.group||"Grupo",local:r.local,visitante:r.visitante,goles_local:numOrNull(r.goles_local),goles_visitante:numOrNull(r.goles_visitante)}}
+function numOrNull(v){if(v===undefined||v===null||String(v).trim()==="")return null;const n=Number(String(v).replace(",","."));return Number.isFinite(n)?n:null}
+function winner(a,b){if(a>b)return"L";if(a<b)return"V";return"E"}
+function score(pred,p){if(p.goles_local===null||p.goles_visitante===null)return{points:0,exact:false,hit:false};const pl=numOrNull(pred.local),pv=numOrNull(pred.visitante);if(pl===null||pv===null)return{points:0,exact:false,hit:false};if(pl===p.goles_local&&pv===p.goles_visitante)return{points:2,exact:true,hit:true};if(winner(pl,pv)===winner(p.goles_local,p.goles_visitante))return{points:1,exact:false,hit:true};return{points:0,exact:false,hit:false}}
+async function refreshAll(){await loadPartidos();await loadPronosticos();renderAll()}
+async function loadPartidos(){const res=await fetch(CONFIG.partidosCsvUrl+"&cache="+Date.now());partidos=(parseCSV(await res.text()).map(normalizePartido).filter(p=>p.partido_id&&p.local&&p.visitante))}
+function localPredictions(){return JSON.parse(localStorage.getItem("prode_pronosticos")||"[]")}
+function saveLocalPrediction(p){const arr=localPredictions().filter(x=>!(x.nombre===p.nombre&&x.fecha===p.fecha));arr.push(p);localStorage.setItem("prode_pronosticos",JSON.stringify(arr))}
+async function loadPronosticos(){if(!CONFIG.appsScriptUrl){pronosticos=localPredictions();return}return new Promise(resolve=>{const cb="prodeCb"+Date.now();window[cb]=data=>{pronosticos=data.pronosticos||[];delete window[cb];resolve()};const s=document.createElement("script");s.src=CONFIG.appsScriptUrl+"?callback="+cb+"&t="+Date.now();s.onerror=()=>{pronosticos=localPredictions();resolve()};document.body.appendChild(s)})}
+function renderAll(){setupSelectors();renderPredictionForm();renderMatches();renderRanking();renderNotice()}
+function fechas(){return [...new Set(partidos.map(p=>p.fecha))]}
+function setupSelectors(){const fs=fechas();const current=document.getElementById("fechaSelect").value||fs[0]||"";document.getElementById("fechaSelect").innerHTML=fs.map(f=>`<option ${f===current?"selected":""}>${f}</option>`).join("");const rf=document.getElementById("rankingFecha").value||"Todas";document.getElementById("rankingFecha").innerHTML=["Todas",...fs].map(f=>`<option ${f===rf?"selected":""}>${f}</option>`).join("")}
+function renderPredictionForm(){const fecha=document.getElementById("fechaSelect").value;const ms=partidos.filter(p=>p.fecha===fecha);document.getElementById("matchesForm").innerHTML=ms.map(p=>`<div class="row"><div><div class="teams">${p.local} vs ${p.visitante}</div><div class="meta">${p.fecha} · ${p.grupo}</div></div><input type="number" min="0" max="30" id="p_${p.partido_id}_l" placeholder="${p.local}"><input type="number" min="0" max="30" id="p_${p.partido_id}_v" placeholder="${p.visitante}"></div>`).join("")||"<p class='small'>No hay partidos cargados.</p>"}
+function renderMatches(){document.getElementById("matchesList").innerHTML=partidos.map(p=>{const done=p.goles_local!==null&&p.goles_visitante!==null;return`<div class="row" style="grid-template-columns:1fr auto"><div><div class="teams">${p.local} ${p.goles_local??"-"} - ${p.goles_visitante??"-"} ${p.visitante}</div><div class="meta">${p.fecha} · ${p.grupo}</div></div><span class="pill ${done?"done":"pending"}">${done?"Computado":"Pendiente"}</span></div>`}).join("")}
+async function submitPrediction(){const nombre=document.getElementById("nameInput").value.trim();const email=document.getElementById("emailInput").value.trim();const fecha=document.getElementById("fechaSelect").value;if(!nombre){msg("Ingresá nombre y apellido",true);return}const ms=partidos.filter(p=>p.fecha===fecha);const preds={};for(const p of ms){const l=document.getElementById(`p_${p.partido_id}_l`).value;const v=document.getElementById(`p_${p.partido_id}_v`).value;if(l===""||v===""){msg("Completá todos los partidos de la fecha",true);return}preds[p.partido_id]={local:Number(l),visitante:Number(v)}}const payload={timestamp:new Date().toISOString(),nombre,email,fecha,predicciones:preds};document.getElementById("sendBtn").disabled=true;if(CONFIG.appsScriptUrl){await fetch(CONFIG.appsScriptUrl,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)}).catch(()=>{});}else{saveLocalPrediction(payload)}msg("Pronóstico enviado. Refrescando ranking...",false);document.getElementById("sendBtn").disabled=false;await loadPronosticos();renderRanking()}
+function msg(t,error){const el=document.getElementById("submitMsg");el.className="notice"+(error?" warn":"");el.textContent=t;el.classList.remove("hide")}
+function renderRanking(){const f=document.getElementById("rankingFecha").value||"Todas";const ps=f==="Todas"?partidos:partidos.filter(p=>p.fecha===f);const map={};for(const pr of pronosticos){if(f!=="Todas"&&pr.fecha!==f)continue;if(!map[pr.nombre])map[pr.nombre]={employee:pr.nombre,points:0,exacts:0,hits:0};for(const p of ps){const pred=pr.predicciones?.[p.partido_id];if(!pred)continue;const s=score(pred,p);map[pr.nombre].points+=s.points;if(s.exact)s.map;if(s.exact)map[pr.nombre].exacts++;if(s.hit)map[pr.nombre].hits++}}const rank=Object.values(map).sort((a,b)=>b.points-a.points||b.exacts-a.exacts||a.employee.localeCompare(b.employee));const leader=rank[0];document.getElementById("leaderName").textContent=leader?leader.employee:"-";document.getElementById("leaderPoints").textContent=(leader?leader.points:0)+" pts";document.getElementById("computedMatches").textContent=partidos.filter(p=>p.goles_local!==null&&p.goles_visitante!==null).length;document.getElementById("rankingBody").innerHTML=rank.map((r,i)=>`<tr><td>${i+1}</td><td><b>${r.employee}</b></td><td class="right"><b>${r.points}</b></td><td class="right">${r.exacts}</td><td class="right">${r.hits}</td></tr>`).join("")||`<tr><td colspan="5" class="small">Todavía no hay pronósticos cargados.</td></tr>`}
+function renderNotice(){const el=document.getElementById("backendNotice");if(CONFIG.appsScriptUrl){el.className="notice";el.innerHTML="<b>Modo conectado:</b> los pronósticos se guardan en Google Sheets."}else{el.className="notice warn";el.innerHTML="<b>Modo demo:</b> los pronósticos se guardan solo en este navegador. Para uso con empleados falta pegar la URL de Apps Script en el código."}}
+refreshAll().catch(e=>{document.body.insertAdjacentHTML("beforeend",`<div class='notice warn'>Error cargando datos: ${e.message}</div>`)});
 </script>
 </body>
 </html>

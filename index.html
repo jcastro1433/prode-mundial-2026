@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prode Mundial 2026 - Ranking</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --warning: #ca8a04;
+      --danger: #dc2626;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .header {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 1px 8px rgba(15, 23, 42, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 14px;
+      margin: 0 0 6px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .btn {
+      border: 0;
+      background: var(--primary);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn:hover { background: var(--primary-dark); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 1px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .stat-icon { font-size: 30px; }
+    .stat-label { color: var(--muted); font-size: 14px; margin: 0; }
+    .stat-value { font-size: 22px; font-weight: 800; margin: 4px 0 0; }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    h2 { margin: 0; font-size: 22px; }
+    .small { color: var(--muted); font-size: 14px; margin: 4px 0 0; }
+
+    select {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+    }
+
+    thead { background: #f1f5f9; }
+    th, td { padding: 14px; text-align: left; border-top: 1px solid var(--border); }
+    th { color: var(--muted); font-size: 13px; }
+    td.right, th.right { text-align: right; }
+    tbody tr:hover { background: #f8fafc; }
+    .points { font-weight: 900; font-size: 18px; }
+    .pos { font-weight: 800; }
+
+    .matches {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .match {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      background: white;
+    }
+
+    .match-meta {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .match-score {
+      font-size: 20px;
+      font-weight: 900;
+      margin: 0;
+    }
+
+    .pill {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .pill.done { background: #dcfce7; color: #166534; }
+    .pill.pending { background: #fef3c7; color: #92400e; }
+
+    .admin-note {
+      border-left: 4px solid var(--primary);
+      background: #eff6ff;
+      padding: 14px 16px;
+      border-radius: 14px;
+      color: #1e3a8a;
+      line-height: 1.45;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 760px) {
+      .container { padding: 16px; }
+      .grid, .matches { grid-template-columns: 1fr; }
+      h1 { font-size: 28px; }
+      table { font-size: 14px; }
+      th, td { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <div>
+        <p class="eyebrow">Prode interno</p>
+        <h1>Ranking diario</h1>
+        <p class="subtitle">Carga simple por fecha: primero Fecha 1 de grupos, después Fecha 2, y más adelante eliminación directa.</p>
+      </div>
+      <button class="btn" onclick="render()">↻ Actualizar ranking</button>
+    </header>
+
+    <section class="grid">
+      <div class="card stat">
+        <span class="stat-icon">🏆</span>
+        <div>
+          <p class="stat-label">Líder actual</p>
+          <p class="stat-value" id="leaderName">-</p>
+        </div>
+      </div>
+      <div class="card stat">
+        <span class="stat-icon">🥇</span>
+        <div>
+          <p class="stat-label">Puntaje líder</p>
+          <p class="stat-value" id="leaderPoints">-</p>
+        </div>
+      </div>
+      <div class="card stat">
+        <span class="stat-icon">📅</span>
+        <div>
+          <p class="stat-label">Partidos computados</p>
+          <p class="stat-value" id="computedMatches">-</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <div>
+          <h2>Tabla de posiciones</h2>
+          <p class="small">1 punto por ganador o empate. 2 puntos por resultado exacto.</p>
+        </div>
+        <div>
+          <select id="fechaFilter" onchange="render()"></select>
+          <select id="employeeFilter" onchange="render()"></select>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Empleado</th>
+            <th class="right">Puntos</th>
+            <th class="right">Exactos</th>
+            <th class="right">Aciertos</th>
+          </tr>
+        </thead>
+        <tbody id="rankingBody"></tbody>
+      </table>
+    </section>
+
+    <section class="card" style="margin-top: 20px;">
+      <h2>Partidos computados / pendientes</h2>
+      <div class="matches" id="matchesList" style="margin-top: 16px;"></div>
+      <div class="admin-note">
+        <strong>Uso interno:</strong> por ahora los partidos, pronósticos y resultados están cargados en el código como ejemplo. El próximo paso simple es reemplazar estos datos por una planilla de Google Sheets.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const employees = [
+      "Ana López",
+      "Bruno García",
+      "Carla Pérez",
+      "Diego Castro",
+      "Elena Ruiz",
+      "Martín Silva"
+    ];
+
+    const matches = [
+      { id: 1, fecha: "Fecha 1", fase: "Grupos", group: "Grupo A", date: "2026-06-11", home: "Argentina", away: "Canadá", resultHome: 2, resultAway: 0 },
+      { id: 2, fecha: "Fecha 1", fase: "Grupos", group: "Grupo A", date: "2026-06-11", home: "Chile", away: "Perú", resultHome: 1, resultAway: 1 },
+      { id: 3, fecha: "Fecha 1", fase: "Grupos", group: "Grupo B", date: "2026-06-12", home: "Brasil", away: "México", resultHome: 3, resultAway: 1 },
+      { id: 4, fecha: "Fecha 1", fase: "Grupos", group: "Grupo B", date: "2026-06-12", home: "Uruguay", away: "Colombia", resultHome: 0, resultAway: 1 },
+      { id: 5, fecha: "Fecha 2", fase: "Grupos", group: "Grupo A", date: "2026-06-16", home: "Argentina", away: "Chile", resultHome: null, resultAway: null },
+      { id: 6, fecha: "Fecha 2", fase: "Grupos", group: "Grupo B", date: "2026-06-17", home: "Brasil", away: "Uruguay", resultHome: null, resultAway: null }
+    ];
+
+    const predictions = [
+      { employee: "Ana López", matchId: 1, home: 2, away: 0 },
+      { employee: "Ana López", matchId: 2, home: 1, away: 0 },
+      { employee: "Ana López", matchId: 3, home: 2, away: 1 },
+      { employee: "Ana López", matchId: 4, home: 1, away: 1 },
+      { employee: "Bruno García", matchId: 1, home: 1, away: 0 },
+      { employee: "Bruno García", matchId: 2, home: 1, away: 1 },
+      { employee: "Bruno García", matchId: 3, home: 3, away: 1 },
+      { employee: "Bruno García", matchId: 4, home: 0, away: 2 },
+      { employee: "Carla Pérez", matchId: 1, home: 2, away: 1 },
+      { employee: "Carla Pérez", matchId: 2, home: 0, away: 0 },
+      { employee: "Carla Pérez", matchId: 3, home: 1, away: 1 },
+      { employee: "Carla Pérez", matchId: 4, home: 0, away: 1 },
+      { employee: "Diego Castro", matchId: 1, home: 3, away: 0 },
+      { employee: "Diego Castro", matchId: 2, home: 2, away: 1 },
+      { employee: "Diego Castro", matchId: 3, home: 2, away: 0 },
+      { employee: "Diego Castro", matchId: 4, home: 1, away: 2 },
+      { employee: "Elena Ruiz", matchId: 1, home: 2, away: 0 },
+      { employee: "Elena Ruiz", matchId: 2, home: 2, away: 2 },
+      { employee: "Elena Ruiz", matchId: 3, home: 3, away: 1 },
+      { employee: "Elena Ruiz", matchId: 4, home: 0, away: 0 },
+      { employee: "Martín Silva", matchId: 1, home: 1, away: 1 },
+      { employee: "Martín Silva", matchId: 2, home: 1, away: 1 },
+      { employee: "Martín Silva", matchId: 3, home: 4, away: 1 },
+      { employee: "Martín Silva", matchId: 4, home: 0, away: 1 }
+    ];
+
+    function winner(home, away) {
+      if (home > away) return "home";
+      if (home < away) return "away";
+      return "draw";
+    }
+
+    function scorePrediction(prediction, match) {
+      if (match.resultHome === null || match.resultAway === null) return { points: 0, type: "Pendiente" };
+      if (prediction.home === match.resultHome && prediction.away === match.resultAway) return { points: 2, type: "Resultado exacto" };
+      if (winner(prediction.home, prediction.away) === winner(match.resultHome, match.resultAway)) return { points: 1, type: "Ganador/empate" };
+      return { points: 0, type: "Sin puntos" };
+    }
+
+    function calculateRanking(visibleMatches) {
+      return employees.map(employee => {
+        const detail = predictions
+          .filter(prediction => prediction.employee === employee)
+          .filter(prediction => visibleMatches.some(match => match.id === prediction.matchId))
+          .map(prediction => {
+            const match = matches.find(m => m.id === prediction.matchId);
+            return scorePrediction(prediction, match);
+          });
+
+        return {
+          employee,
+          points: detail.reduce((sum, item) => sum + item.points, 0),
+          exacts: detail.filter(item => item.points === 2).length,
+          hits: detail.filter(item => item.points > 0).length
+        };
+      }).sort((a, b) => b.points - a.points || b.exacts - a.exacts || a.employee.localeCompare(b.employee));
+    }
+
+    function setupFilters() {
+      const fechaSelect = document.getElementById("fechaFilter");
+      const employeeSelect = document.getElementById("employeeFilter");
+      const selectedFecha = fechaSelect.value || "Todas";
+      const selectedEmployee = employeeSelect.value || "Todos";
+
+      const fechas = ["Todas", ...new Set(matches.map(match => match.fecha))];
+      fechaSelect.innerHTML = fechas.map(fecha => `<option ${fecha === selectedFecha ? "selected" : ""}>${fecha}</option>`).join("");
+      employeeSelect.innerHTML = ["Todos", ...employees].map(employee => `<option ${employee === selectedEmployee ? "selected" : ""}>${employee}</option>`).join("");
+    }
+
+    function render() {
+      setupFilters();
+      const selectedFecha = document.getElementById("fechaFilter").value;
+      const selectedEmployee = document.getElementById("employeeFilter").value;
+      const visibleMatches = selectedFecha === "Todas" ? matches : matches.filter(match => match.fecha === selectedFecha);
+      const ranking = calculateRanking(visibleMatches);
+      const filteredRanking = selectedEmployee === "Todos" ? ranking : ranking.filter(item => item.employee === selectedEmployee);
+      const leader = ranking[0] || { employee: "-", points: 0 };
+
+      document.getElementById("leaderName").textContent = leader.employee;
+      document.getElementById("leaderPoints").textContent = leader.points + " pts";
+      document.getElementById("computedMatches").textContent = visibleMatches.filter(match => match.resultHome !== null && match.resultAway !== null).length;
+
+      document.getElementById("rankingBody").innerHTML = filteredRanking.map(item => {
+        const position = ranking.findIndex(r => r.employee === item.employee) + 1;
+        return `
+          <tr>
+            <td class="pos">${position}</td>
+            <td><strong>${item.employee}</strong></td>
+            <td class="right points">${item.points}</td>
+            <td class="right">${item.exacts}</td>
+            <td class="right">${item.hits}</td>
+          </tr>
+        `;
+      }).join("");
+
+      document.getElementById("matchesList").innerHTML = visibleMatches.map(match => {
+        const isDone = match.resultHome !== null && match.resultAway !== null;
+        return `
+          <div class="match">
+            <p class="match-meta">${match.fecha} · ${match.group} · ${match.date}</p>
+            <p class="match-score">${match.home} ${match.resultHome ?? "-"} - ${match.resultAway ?? "-"} ${match.away}</p>
+            <span class="pill ${isDone ? "done" : "pending"}">${isDone ? "Computado" : "Pendiente"}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    render();
+  </script>
+</body>
+</html>

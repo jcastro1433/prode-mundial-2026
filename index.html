@@ -1,53 +1,57 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Prode Mundial 2026 - Demo</title>
-  <style>
-    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f8fafc;color:#0f172a}.container{max-width:1100px;margin:auto;padding:24px}.header,.card{background:white;border-radius:24px;padding:24px;box-shadow:0 1px 8px #0f172a14}.header{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}.eyebrow{color:#64748b;font-weight:700;margin:0 0 6px}h1{margin:0;font-size:34px}.subtitle,.small{color:#64748b}.btn{border:0;background:#2563eb;color:white;padding:12px 18px;border-radius:16px;font-weight:700;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0}.stat{display:flex;gap:14px;align-items:center}.stat-icon{font-size:30px}.stat-label{color:#64748b;font-size:14px;margin:0}.stat-value{font-size:22px;font-weight:800;margin:4px 0 0}.section-title{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:16px}select{border:1px solid #e2e8f0;border-radius:14px;padding:10px 14px;background:white}table{width:100%;border-collapse:collapse}thead{background:#f1f5f9}th,td{padding:14px;border-top:1px solid #e2e8f0;text-align:left}th{color:#64748b;font-size:13px}.right{text-align:right}.points{font-size:18px;font-weight:900}.pos{font-weight:800}.matches{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.match{border:1px solid #e2e8f0;border-radius:18px;padding:16px}.match-meta{color:#64748b;font-size:13px;font-weight:700;margin:0 0 8px}.match-score{font-size:20px;font-weight:900;margin:0}.pill{display:inline-block;margin-top:10px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800}.done{background:#dcfce7;color:#166534}.pending{background:#fef3c7;color:#92400e}.admin-note{border-left:4px solid #2563eb;background:#eff6ff;padding:14px 16px;border-radius:14px;color:#1e3a8a;line-height:1.45;margin-top:18px}@media(max-width:760px){.container{padding:16px}.grid,.matches{grid-template-columns:1fr}h1{font-size:28px}th,td{padding:10px}}
-  </style>
+<meta charset="UTF-8">
+<title>Prode en vivo</title>
+<style>
+body{font-family:Arial;background:#f8fafc;padding:20px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border:1px solid #ddd}
+th{background:#eee}
+</style>
 </head>
 <body>
-  <main class="container">
-    <header class="header">
-      <div><p class="eyebrow">Demo Prode - Grupo Argentina</p><h1>Ranking diario</h1><p class="subtitle">Demo con 6 partidos. 1 punto por ganador/empate y 2 por resultado exacto.</p></div>
-      <button class="btn" onclick="render()">↻ Actualizar ranking</button>
-    </header>
-    <section class="grid">
-      <div class="card stat"><span class="stat-icon">🏆</span><div><p class="stat-label">Líder actual</p><p class="stat-value" id="leaderName">-</p></div></div>
-      <div class="card stat"><span class="stat-icon">🥇</span><div><p class="stat-label">Puntaje líder</p><p class="stat-value" id="leaderPoints">-</p></div></div>
-      <div class="card stat"><span class="stat-icon">📅</span><div><p class="stat-label">Partidos computados</p><p class="stat-value" id="computedMatches">-</p></div></div>
-    </section>
-    <section class="card">
-      <div class="section-title"><div><h2>Tabla de posiciones</h2><p class="small">Demo inicial para validar funcionamiento antes de cargar todo el Mundial.</p></div><div><select id="fechaFilter" onchange="render()"></select><select id="employeeFilter" onchange="render()"></select></div></div>
-      <table><thead><tr><th>#</th><th>Empleado</th><th class="right">Puntos</th><th class="right">Exactos</th><th class="right">Aciertos</th></tr></thead><tbody id="rankingBody"></tbody></table>
-    </section>
-    <section class="card" style="margin-top:20px"><h2>Partidos computados / pendientes</h2><div class="matches" id="matchesList" style="margin-top:16px"></div><div class="admin-note"><strong>Próximo paso:</strong> cuando tengas el Google Sheet, publicá la hoja como CSV y pegamos acá la URL. Mientras tanto esta demo ya calcula el ranking con datos de prueba.</div></section>
-  </main>
+<h1>Ranking en vivo</h1>
+<table>
+<thead><tr><th>#</th><th>Empleado</th><th>Puntos</th></tr></thead>
+<tbody id="ranking"></tbody>
+</table>
 <script>
-const employees=["Ana López","Bruno García","Carla Pérez","Diego Castro","Elena Ruiz","Martín Silva"];
-const matches=[
-{id:1,fecha:"Fecha 1",fase:"Grupos",group:"Grupo A",date:"2026-06-11",home:"Argentina",away:"Canadá",resultHome:2,resultAway:0},
-{id:2,fecha:"Fecha 1",fase:"Grupos",group:"Grupo A",date:"2026-06-12",home:"Chile",away:"Perú",resultHome:1,resultAway:1},
-{id:3,fecha:"Fecha 2",fase:"Grupos",group:"Grupo A",date:"2026-06-16",home:"Argentina",away:"Chile",resultHome:null,resultAway:null},
-{id:4,fecha:"Fecha 2",fase:"Grupos",group:"Grupo A",date:"2026-06-17",home:"Canadá",away:"Perú",resultHome:null,resultAway:null},
-{id:5,fecha:"Fecha 3",fase:"Grupos",group:"Grupo A",date:"2026-06-21",home:"Argentina",away:"Perú",resultHome:null,resultAway:null},
-{id:6,fecha:"Fecha 3",fase:"Grupos",group:"Grupo A",date:"2026-06-21",home:"Canadá",away:"Chile",resultHome:null,resultAway:null}
-];
-const predictions=[
-{employee:"Ana López",matchId:1,home:2,away:0},{employee:"Ana López",matchId:2,home:1,away:0},{employee:"Ana López",matchId:3,home:2,away:1},{employee:"Ana López",matchId:4,home:1,away:1},{employee:"Ana López",matchId:5,home:3,away:0},{employee:"Ana López",matchId:6,home:1,away:2},
-{employee:"Bruno García",matchId:1,home:1,away:0},{employee:"Bruno García",matchId:2,home:1,away:1},{employee:"Bruno García",matchId:3,home:1,away:1},{employee:"Bruno García",matchId:4,home:0,away:1},{employee:"Bruno García",matchId:5,home:2,away:0},{employee:"Bruno García",matchId:6,home:0,away:0},
-{employee:"Carla Pérez",matchId:1,home:2,away:1},{employee:"Carla Pérez",matchId:2,home:0,away:0},{employee:"Carla Pérez",matchId:3,home:3,away:1},{employee:"Carla Pérez",matchId:4,home:2,away:1},{employee:"Carla Pérez",matchId:5,home:2,away:1},{employee:"Carla Pérez",matchId:6,home:1,away:1},
-{employee:"Diego Castro",matchId:1,home:3,away:0},{employee:"Diego Castro",matchId:2,home:2,away:1},{employee:"Diego Castro",matchId:3,home:2,away:0},{employee:"Diego Castro",matchId:4,home:1,away:0},{employee:"Diego Castro",matchId:5,home:1,away:0},{employee:"Diego Castro",matchId:6,home:1,away:2},
-{employee:"Elena Ruiz",matchId:1,home:2,away:0},{employee:"Elena Ruiz",matchId:2,home:2,away:2},{employee:"Elena Ruiz",matchId:3,home:2,away:1},{employee:"Elena Ruiz",matchId:4,home:0,away:0},{employee:"Elena Ruiz",matchId:5,home:4,away:1},{employee:"Elena Ruiz",matchId:6,home:0,away:2},
-{employee:"Martín Silva",matchId:1,home:1,away:1},{employee:"Martín Silva",matchId:2,home:1,away:1},{employee:"Martín Silva",matchId:3,home:2,away:2},{employee:"Martín Silva",matchId:4,home:2,away:0},{employee:"Martín Silva",matchId:5,home:3,away:1},{employee:"Martín Silva",matchId:6,home:1,away:0}
-];
-function winner(h,a){return h>a?"home":h<a?"away":"draw"}function scorePrediction(p,m){if(m.resultHome===null||m.resultAway===null)return{points:0};if(p.home===m.resultHome&&p.away===m.resultAway)return{points:2};if(winner(p.home,p.away)===winner(m.resultHome,m.resultAway))return{points:1};return{points:0}}
-function calculateRanking(visibleMatches){return employees.map(employee=>{const detail=predictions.filter(p=>p.employee===employee).filter(p=>visibleMatches.some(m=>m.id===p.matchId)).map(p=>scorePrediction(p,matches.find(m=>m.id===p.matchId)));return{employee,points:detail.reduce((s,i)=>s+i.points,0),exacts:detail.filter(i=>i.points===2).length,hits:detail.filter(i=>i.points>0).length}}).sort((a,b)=>b.points-a.points||b.exacts-a.exacts||a.employee.localeCompare(b.employee))}
-function setupFilters(){const fs=document.getElementById("fechaFilter"),es=document.getElementById("employeeFilter"),sf=fs.value||"Todas",se=es.value||"Todos",fechas=["Todas",...new Set(matches.map(m=>m.fecha))];fs.innerHTML=fechas.map(f=>`<option ${f===sf?"selected":""}>${f}</option>`).join("");es.innerHTML=["Todos",...employees].map(e=>`<option ${e===se?"selected":""}>${e}</option>`).join("")}
-function render(){setupFilters();const selectedFecha=document.getElementById("fechaFilter").value,selectedEmployee=document.getElementById("employeeFilter").value,visibleMatches=selectedFecha==="Todas"?matches:matches.filter(m=>m.fecha===selectedFecha),ranking=calculateRanking(visibleMatches),filteredRanking=selectedEmployee==="Todos"?ranking:ranking.filter(i=>i.employee===selectedEmployee),leader=ranking[0]||{employee:"-",points:0};document.getElementById("leaderName").textContent=leader.employee;document.getElementById("leaderPoints").textContent=leader.points+" pts";document.getElementById("computedMatches").textContent=visibleMatches.filter(m=>m.resultHome!==null&&m.resultAway!==null).length;document.getElementById("rankingBody").innerHTML=filteredRanking.map(i=>`<tr><td class="pos">${ranking.findIndex(r=>r.employee===i.employee)+1}</td><td><strong>${i.employee}</strong></td><td class="right points">${i.points}</td><td class="right">${i.exacts}</td><td class="right">${i.hits}</td></tr>`).join("");document.getElementById("matchesList").innerHTML=visibleMatches.map(m=>{const d=m.resultHome!==null&&m.resultAway!==null;return`<div class="match"><p class="match-meta">${m.fecha} · ${m.group} · ${m.date}</p><p class="match-score">${m.home} ${m.resultHome??"-"} - ${m.resultAway??"-"} ${m.away}</p><span class="pill ${d?"done":"pending"}">${d?"Computado":"Pendiente"}</span></div>`}).join("")}
-render();
+const resultadosURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTN00doLz5fBvG_rfm9a8mWZuOR04KsIsxCIoqHSjwd5uVolmQK0UTmHfZ3uMZfB1DyuBuEJvVeOcDI/pub?output=csv";
+const pronosURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRHsLwPCbEOUMSL0V6LNkIAPs4hx8TXa7xnbrmLMLSgL-BMHzLtA4W8j4qJkIMCq72A3cX4Yz-BXMyN/pub?output=csv";
+
+function parseCSV(t){const r=t.trim().split("\n");const h=r[0].split(",");return r.slice(1).map(l=>{const v=l.split(",");let o={};h.forEach((k,i)=>o[k.trim()]=v[i]);return o})}
+function winner(a,b){return a>b?"L":a<b?"V":"E"}
+
+async function load(){
+const res=await fetch(resultadosURL);const pro=await fetch(pronosURL);
+const resultados=parseCSV(await res.text());
+const pronos=parseCSV(await pro.text());
+let ranking={};
+
+pronos.forEach(p=>{
+const nombre=p["Nombre"]||p["Nombre y apellido"];
+if(!ranking[nombre])ranking[nombre]=0;
+
+resultados.forEach((r,i)=>{
+const gl=Number(r.goles_local);const gv=Number(r.goles_visitante);
+if(isNaN(gl)||isNaN(gv))return;
+
+const values=Object.values(p);
+const pl=Number(values[(i*2)+1]);
+const pv=Number(values[(i*2)+2]);
+
+if(pl===gl && pv===gv)ranking[nombre]+=2;
+else if(winner(pl,pv)===winner(gl,gv))ranking[nombre]+=1;
+});
+});
+
+const sorted=Object.entries(ranking).sort((a,b)=>b[1]-a[1]);
+
+document.getElementById("ranking").innerHTML=sorted.map((r,i)=>`<tr><td>${i+1}</td><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("");
+}
+
+load();
 </script>
 </body>
 </html>
